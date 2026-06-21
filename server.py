@@ -2043,7 +2043,7 @@ def _chapter_label(current_file: str | None) -> str:
     return current_file or "（未指定章节）"
 
 
-def _read_chapter_source(current_file: str | None, max_chars: int = 12000) -> str:
+def _read_chapter_source(current_file: str | None, max_chars: int = 6000) -> str:
     """Return the chapter's text for prompt injection (prefers .md, truncated).
 
     qa/interview answer 'based on the current chapter', so we feed the markdown
@@ -2055,24 +2055,26 @@ def _read_chapter_source(current_file: str | None, max_chars: int = 12000) -> st
         try:
             text = cand.read_text(encoding="utf-8")
             if len(text) > max_chars:
-                text = text[:max_chars] + "\n\n…（正文已截断，仅展示前部分）…"
+                text = text[:max_chars] + f"\n\n…（正文已截断至 {max_chars} 字，需要后续内容请用 Read 工具读取原文件）…"
             return text
         except Exception:
             return ""
     return ""
 
 
-def _format_history(history: list) -> str:
+def _format_history(history: list, max_turns: int = 6) -> str:
+    entries = [h for h in (history or []) if isinstance(h, dict) and (h.get("text") or "").strip()]
+    if len(entries) > max_turns * 2:
+        omitted = len(entries) - max_turns * 2
+        entries = entries[-(max_turns * 2):]
+        prefix = f"（前 {omitted} 条对话已省略）\n"
+    else:
+        prefix = ""
     lines: list[str] = []
-    for h in history or []:
-        if not isinstance(h, dict):
-            continue
-        text = (h.get("text") or "").strip()
-        if not text:
-            continue
+    for h in entries:
         who = "用户" if h.get("role") == "user" else "助手"
-        lines.append(f"{who}：{text}")
-    return "\n".join(lines)
+        lines.append(f"{who}：{h['text'].strip()}")
+    return prefix + "\n".join(lines)
 
 
 def _baguwen_notes_path(session_id: str) -> Path:
@@ -2270,9 +2272,7 @@ def build_interview_prompt(msg: dict) -> str:
     round_type = msg.get("interview_round") or "auto"
 
     flow = _read_interview_flow()
-    rubric = _read_interview_rubric()
     resume_text = _extract_resume_text(uploaded_pdf, session_id)
-    kb_index = _read_kb_index_summary()
     notes_path = _interview_notes_path(session_id)
 
     # ── Conversation phase detection ────────────────────────────────────────
@@ -2320,76 +2320,24 @@ def build_interview_prompt(msg: dict) -> str:
     else:
         input_profile = "no_materials"
 
-    # Difficulty instruction
-    if difficulty == "strict":
-        diff_inst = "面试风格：全程严格。回答不清楚立即追问。回答过于完美立即核验证据。不给缓冲，不给鼓励性评价。评分不虚高。"
-    else:
-        diff_inst = "面试风格：专业标准。第一轮语气专业但不过度压迫。回答泛泛、求提示、逃避问题时升级为严格追问。"
-
-    # Round persona
-    round_personas = {
-        "auto": "综合面试官，根据简历/JD自动切换角色，全维度考察。",
-        "hr": "HR 面试官。侧重：动机、文化匹配、稳定性、薪酬预期、空窗/跳槽解释。",
-        "business": "业务面试官。侧重：业务理解、项目贡献、跨部门协作、目标达成。",
-        "tech": "技术面试官。侧重：技术深度、系统设计、代码能力、技术决策。",
-        "director": "部门主管/VP。侧重：战略视野、团队管理、资源分配、向上汇报。",
-    }
-    round_inst = round_personas.get(round_type, round_personas["auto"])
-
-    # Build prompt sections
+    # Build prompt sections — difficulty and round persona details are already in
+    # flow.md; only pass the parameter values here to avoid duplication.
     sections: list[str] = []
     sections.append("你是严格但专业的真实面试官。")
-    sections.append(f"面试官人设：{round_inst}")
-    sections.append(diff_inst)
+    sections.append(f"当前轮次人设：{round_type}（详见面试流程规范中的「轮次人设」段）")
+    sections.append(f"当前难度：{difficulty}（详见面试流程规范中的「难度指令」段）")
 
     if is_opening:
-        # Opening turn — the uploaded resume/JD (or start token) are input
-        # materials, NOT answers. Acknowledge them, then ask the first question.
         opening = (
-            "\n这是面试开场，本轮没有用户的面试回答。"
-            "\n【输出格式·硬性要求】本轮用自然口语化的对话展开，像面试官刚拿到材料、与候选人寒暄开场。"
-            "严禁出现「本轮评分」「评价」「主要风险」「追问/下一题」这类字段标题或任何打分格式，"
-            "也不要写「不评分」「第 0 轮」之类的系统措辞——这些只在正式答题后的轮次使用。"
+            "\n这是面试开场（第 0 轮），本轮没有用户的面试回答。"
+            "\n严格按照面试流程规范中的「开场规则」执行，不要套用每轮评价格式。"
         )
-        if has_resume and has_jd:
-            opening += (
-                "\n用户已提供简历和岗位需求/JD 作为面试输入材料（不是面试回答）。"
-                "\n你必须按以下顺序输出：\n"
-                "1. 开场概述：用 2-3 句话概括候选人的核心背景（从简历提取）和目标岗位要点（从 JD 提取），让用户确认信息无误。\n"
-                "2. 面试规则说明（见开场规则）。\n"
-                "3. 第 1 题。\n"
-                "禁止：对用户提供的简历或 JD 文本进行评价、打分或追问——这些是输入材料，不是面试回答。"
-            )
-        elif has_resume:
-            opening += (
-                "\n用户已上传简历，但未提供岗位需求/JD。"
-                "\n你必须按以下顺序输出：\n"
-                "1. 开场概述：用 1-2 句话概括候选人的核心背景，表明你已读取简历，并提示用户可补充目标岗位以做匹配判断。\n"
-                "2. 面试规则说明（见开场规则）。\n"
-                "3. 第 1 题。\n"
-                "禁止：对简历文本进行评价或打分——这是输入材料，不是面试回答。"
-            )
-        elif has_jd:
-            opening += (
-                "\n用户提供了岗位需求/JD，但未上传简历。"
-                "\n你必须按以下顺序输出：\n"
-                "1. 开场概述：用 1-2 句话概括目标岗位要点，表明你已理解岗位需求，并提示用户可上传简历以做匹配判断。\n"
-                "2. 面试规则说明（见开场规则）。\n"
-                "3. 第 1 题。\n"
-                "禁止：对 JD 文本进行评价或打分——这是输入材料，不是面试回答。"
-            )
+        opening += f"\n输入完整度类型：{input_profile}"
+        if input_profile == "no_materials":
+            opening += "\n用户尚未提供任何材料，先问目标岗位，不要输出面试规则或第 1 题。"
         else:
-            # No resume and no JD — must ask for the target role before starting.
-            opening += (
-                "\n用户尚未提供简历或岗位需求，只是想开始面试。"
-                "\n你必须按以下顺序输出：\n"
-                "1. 用 1-2 句话礼貌说明：要开始面试，请先告诉我你想应聘的岗位（公司/方向/职级均可），如有简历也可以上传。\n"
-                "2. 反问用户目标岗位。\n"
-                "禁止：自行编造一个岗位、输出面试规则或直接给出第 1 题——必须等用户回复目标岗位后才正式开始。"
-            )
-        opening += (
-            "\n\n私下建立岗位画像、证据地图和问题计划，不要把完整题库透露给用户。"
-        )
+            opening += "\n禁止对输入材料评价或打分——这些不是面试回答。"
+        opening += "\n\n私下建立岗位画像、证据地图和问题计划，不要把完整题库透露给用户。"
         sections.append(opening)
     else:
         # Subsequent turns
@@ -2400,9 +2348,7 @@ def build_interview_prompt(msg: dict) -> str:
             f"\n用户本次回答：{content}"
         )
 
-    sections.append(f"\n【面试流程规范】\n{flow}")
-    if rubric:
-        sections.append(f"\n【评分标准】\n{rubric}")
+    sections.append(f"\n【面试流程规范（含评分标准、难度指令、轮次人设）】\n{flow}")
 
     if resume_text:
         sections.append(f"\n【用户简历文本】\n{resume_text}")
@@ -2413,19 +2359,18 @@ def build_interview_prompt(msg: dict) -> str:
     if has_jd and is_opening:
         sections.append(f"\n【用户提供的岗位需求/JD】\n{content}")
 
-    # KB fallback only when there is something to interview on; suppress it during
-    # a no-materials opening so the model asks for the target role instead of
-    # quizzing the candidate from the knowledge index.
-    if kb_index and not has_resume and not has_jd and not is_opening:
-        sections.append(
-            f"\n【候选人知识储备索引（仅供兜底出题参考，不要进行脱离场景的八股考察）】\n{kb_index}"
-        )
-    elif kb_index and (has_resume or has_jd):
+    if has_resume or has_jd:
         sections.append(
             "\n【知识库】候选人有本地知识库可供参考，"
             "但面试出题必须围绕简历项目和岗位需求，"
             "只有追问项目技术细节时才可用 Read 工具查阅 knowledge/ 目录下的相关章节。"
         )
+    elif not is_opening:
+        kb_index = _read_kb_index_summary(max_chars=2000)
+        if kb_index:
+            sections.append(
+                f"\n【候选人知识储备索引（仅供兜底出题参考，不要进行脱离场景的八股考察）】\n{kb_index}"
+            )
 
     if hist_text:
         sections.append(f"\n【历史对话】\n{hist_text}")
@@ -2445,8 +2390,6 @@ def build_yuan_prompt(msg: dict) -> str:
     """
     content = (msg.get("content") or "").strip()
     history = msg.get("history") or []
-
-    flow = _read_yuan_flow()
 
     # The frontend pushes the just-sent user message into the transcript BEFORE
     # building history, so history's last entry is the current message. Strip it
@@ -2480,7 +2423,15 @@ def build_yuan_prompt(msg: dict) -> str:
     return (
         f"你正在 Yuan Knowledge Base 的「元 skill」模式中，专职帮用户【创建新 skill】或【修改现有 skill】。\n"
         f"工作区：{WORKSPACE}。\n\n"
-        f"【yuan-skill 工作流规范】\n{flow}\n\n"
+        f"【yuan-skill 工作流概要】\n"
+        f"核心流程：阶段1 意图澄清 → 阶段2 方案设计与生成/修改 → 阶段3 验证\n"
+        f"阶段1：先确认「新建 vs 修改」，做模糊点分析（6 类）和 P0-P2 优先级排序，用问题卡收敛后再动手。\n"
+        f"阶段2：创建走近邻检查+模板生成；修改走最小化增量修改。\n"
+        f"阶段3：检查规范合规、职责无重叠。\n\n"
+        f"【必读】在执行阶段 1 的模糊点分析或阶段 2 的方案设计前，"
+        f"**必须**先用 Read 工具读取完整工作流规范 `skills/yuan-skill/flow.md`，"
+        f"其中包含 Entry Gate 判断条件、6 类模糊点表格、优先级定义、问题卡格式和决策轮次节奏控制，"
+        f"不可跳过或凭概要猜测。\n\n"
         f"补充材料（按需用 Read 工具自行读取，不要全量内联）：\n"
         f"- skills/yuan-skill/project-architecture.md\n"
         f"- skills/yuan-skill/existing-skills-inventory.md\n"
