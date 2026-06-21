@@ -1,0 +1,12 @@
+{
+  "name": "render_html",
+  "description": "Convert Markdown / JSON artifacts to single-file HTML using academic or dashboard templates.",
+  "trigger": "Called by other skills or server.py when knowledge content needs to be rendered to HTML.",
+  "usage": "python3 skills/render_html/render.py <input.md> [--template academic|dashboard] [--out <output.html>]",
+  "templates": ["academic", "dashboard"],
+  "constraints": [
+    "Pure stdlib Python, no external pip deps",
+    "Single-file output with embedded CSS",
+    "MathJax + highlight.js from CDN (unless --offline)"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "yuan-skill",
+  "description": "Yuan Knowledge Base Skill 工厂：通过结构化追问帮用户把模糊需求变清晰，理解项目架构，创建或修改 skill。",
+  "trigger": "When the user wants to create a new skill, modify an existing skill, or needs help understanding the skill system.",
+  "flow": "flow.md",
+  "workflow": [
+    "1. Read project-architecture.md to understand the Yuan Knowledge Base workspace structure and rules.",
+    "2. Read existing-skills-inventory.md to understand the capabilities and boundaries of existing skills.",
+    "3. If modifying an existing skill, read its current files (skill.json, flow.md, python/markdown scripts) to establish a baseline.",
+    "4. Follow flow.md Phase 1: run the Entry Gate to decide if structured clarification is needed (for both creation and modification requests).",
+    "5. If clarification is needed: build the Ambiguity Map (tailored for creation or modification), rank unknowns as P0/P1/P2, and execute decision rounds.",
+    "6. Once intent is clear: for creation, classify into 4 patterns and generate; for modification, plan targeted, minimal edits without breaking existing features.",
+    "7. Follow flow.md Phase 3 to verify the generated or modified skill files."
+  ],
+  "constraints": [
+    "Never modify knowledge/ directory contents",
+    "Never modify server.py — new skills must work via Agent self-discovery, not hardcoded routing",
+    "Always check existing-skills-inventory.md before creating to avoid overlap",
+    "Generated/modified skill files must follow conventions in project-architecture.md",
+    "All created or modified files must be under skills/<skill-name>/ directory"
+  ]
+}

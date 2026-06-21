@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic RL Credit Assignment</title>
+
+<meta name="source-path" content="knowledge/07_agents/agentic_rl_credit_assignment_tutorial.md">
+<meta name="generated-at" content="2026-06-20 03:03 UTC">
+
+<!-- MathJax 3 -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+<!-- highlight.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+
+
+<style>
+:root {
+  --bg: #fdfcf7;
+  --bg-soft: #f4f1ea;
+  --bg-code: #f8f5ec;
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-muted: #6b6b6b;
+  --primary: #1a4a8c;
+  --primary-soft: #2d6cb8;
+  --accent: #b8390e;
+  --warn: #b45309;
+  --warn-bg: #fef3c7;
+  --info-bg: #dbeafe;
+  --good-bg: #d1fae5;
+  --good: #065f46;
+  --bad-bg: #fee2e2;
+  --bad: #991b1b;
+  --border: #d6d0c0;
+  --border-soft: #e8e3d5;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Source Serif Pro", "Source Serif 4", "Crimson Pro", "Georgia", "Songti SC", "STSong", serif;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+.layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 48px;
+  padding: 40px 32px;
+}
+
+nav.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  font-size: 13px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border-soft);
+  padding-right: 16px;
+}
+nav.toc h3 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+nav.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
+nav.toc ol li { margin: 5px 0; counter-increment: toc; }
+nav.toc ol li::before { content: counter(toc) ". "; color: var(--ink-muted); margin-right: 4px; }
+nav.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted transparent;
+}
+nav.toc a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+nav.toc ul { list-style: none; padding-left: 14px; margin: 3px 0; font-size: 12px; }
+nav.toc ul li::before { content: "→ "; color: var(--border); }
+
+main { min-width: 0; }
+
+header.hero {
+  border-bottom: 3px double var(--primary);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+}
+header.hero .eyebrow {
+  color: var(--accent);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+header.hero h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+header.hero .subtitle {
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+  font-style: italic;
+}
+header.hero .byline {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+header.hero .byline strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+header.hero .meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 14px;
+}
+header.hero .meta span strong { color: var(--ink-soft); }
+header.hero .meta code {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 11px;
+  background: var(--bg-soft);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+}
+
+h2 {
+  font-size: 24px;
+  margin: 44px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  font-weight: 700;
+}
+h2 .num { color: var(--primary); font-weight: 600; margin-right: 8px; }
+h3 { font-size: 19px; margin: 28px 0 10px; color: var(--primary); font-weight: 600; }
+h4 { font-size: 16px; margin: 20px 0 8px; color: var(--ink); font-weight: 600; }
+
+p { margin: 10px 0; }
+ul, ol { padding-left: 22px; margin: 10px 0; }
+ul li, ol li { margin: 4px 0; }
+ul li::marker { color: var(--primary); }
+
+strong { color: var(--accent); font-weight: 600; }
+em { color: var(--ink-soft); }
+
+a { color: var(--primary); }
+a:hover { color: var(--accent); }
+
+code:not(.hljs) {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.86em;
+  background: var(--bg-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  color: var(--accent);
+}
+
+pre {
+  background: #fafaf6;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  padding: 0;
+  overflow-x: auto;
+  border-radius: 4px;
+  margin: 14px 0;
+}
+pre code, pre code.hljs {
+  background: transparent !important;
+  display: block;
+  padding: 14px 18px !important;
+  font-size: 13px;
+  line-height: 1.55;
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+  color: var(--ink);
+}
+pre.diagram {
+  background: #f9f6ed;
+  border-left: 4px solid var(--accent);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.callout {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  font-size: 15px;
+}
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.callout-info { background: var(--info-bg); border-left-color: var(--primary); }
+.callout-info .callout-title { color: var(--primary); }
+.callout-warn { background: var(--warn-bg); border-left-color: var(--warn); }
+.callout-warn .callout-title { color: var(--warn); }
+.callout-good { background: var(--good-bg); border-left-color: var(--good); }
+.callout-good .callout-title { color: var(--good); }
+.callout-bad { background: var(--bad-bg); border-left-color: var(--bad); }
+.callout-bad .callout-title { color: var(--bad); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+thead { background: var(--primary); color: white; }
+th, td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+th { font-weight: 600; font-size: 13px; letter-spacing: 0.02em; }
+tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--bg-soft); }
+
+details.qa, details {
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  margin: 10px 0;
+  padding: 0;
+}
+details summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary);
+  list-style: none;
+  user-select: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸ ";
+  margin-right: 4px;
+  display: inline-block;
+  transition: transform 0.15s;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details[open] summary { border-bottom: 1px solid var(--border-soft); }
+details > :not(summary) { padding: 10px 14px; }
+details p:first-of-type { margin-top: 8px; }
+
+mjx-container[display="true"] { margin: 12px 0 !important; }
+
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 20px; padding: 20px 16px; }
+  nav.toc {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-soft);
+    padding-right: 0;
+    padding-bottom: 14px;
+  }
+  header.hero h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+}
+@media print {
+  nav.toc { display: none; }
+  .layout { grid-template-columns: 1fr; padding: 0; }
+  body { background: white; }
+  header.hero { border-bottom-color: var(--ink); }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+<li><a href="#0-tldr-cheat-sheet">§0 TL;DR Cheat Sheet</a>
+</li>
+<li><a href="#1-问题终点-reward-为什么会错分-credit">§1 问题：终点 Reward 为什么会错分 Credit</a>
+</li>
+<li><a href="#2-三类方法总览">§2 三类方法总览</a>
+</li>
+<li><a href="#3-state-anchored-stepwise同局面下比较动作">§3 State-Anchored Stepwise：同局面下比较动作</a>
+<ul>
+<li><a href="#31-gigpo--state-grouping-的直觉">3.1 GiGPO / State Grouping 的直觉</a></li>
+<li><a href="#32-hgpostate-相同还不够">3.2 HGPO：State 相同还不够</a></li>
+<li><a href="#33-什么时候用这条线">3.3 什么时候用这条线</a></li>
+</ul>
+</li>
+<li><a href="#4-process--progress-reward给中间步骤打分">§4 Process / Progress Reward：给中间步骤打分</a>
+<ul>
+<li><a href="#41-spa-rl把终点-reward-分摊成-progress">4.1 SPA-RL：把终点 Reward 分摊成 Progress</a></li>
+<li><a href="#42-agentprm把-prm-当成-qsa">4.2 AgentPRM：把 PRM 当成 $Q(s,a)$</a></li>
+<li><a href="#43-pica把-pivot-step-变成-reward-tensor">4.3 PiCA：把 Pivot Step 变成 Reward Tensor</a></li>
+</ul>
+</li>
+<li><a href="#5-intrinsic-signal从-policy-自己找关键点">§5 Intrinsic Signal：从 Policy 自己找关键点</a>
+<ul>
+<li><a href="#51-arpoentropy-高的位置更值得分叉">5.1 ARPO：Entropy 高的位置更值得分叉</a></li>
+<li><a href="#52-igpo正确答案概率的增量">5.2 IGPO：正确答案概率的增量</a></li>
+</ul>
+</li>
+<li><a href="#6-训练接口credit-signal-怎么接进-ppo--grpo">§6 训练接口：Credit Signal 怎么接进 PPO / GRPO</a>
+<ul>
+<li><a href="#61-数据结构">6.1 数据结构</a></li>
+<li><a href="#62-reward-tensor-注入">6.2 Reward Tensor 注入</a></li>
+<li><a href="#63-最小实现骨架">6.3 最小实现骨架</a></li>
+</ul>
+</li>
+<li><a href="#7-选型决策树">§7 选型决策树</a>
+</li>
+<li><a href="#8-常见-failure-modes">§8 常见 Failure Modes</a>
+</li>
+<li><a href="#9-高频面试题">§9 高频面试题</a>
+<ul>
+<li><a href="#q1-为什么-grpo-在-agent-上仍会有-credit-dilution">Q1. 为什么 GRPO 在 agent 上仍会有 credit dilution？</a></li>
+<li><a href="#q2-process-reward-和-progress-reward-有什么区别">Q2. Process reward 和 progress reward 有什么区别？</a></li>
+<li><a href="#q3-为什么同-state-比较-action-还要看-history">Q3. 为什么同 state 比较 action 还要看 history？</a></li>
+<li><a href="#q4-igpo-为什么不适合所有任务">Q4. IGPO 为什么不适合所有任务？</a></li>
+<li><a href="#q5-加了-prm-后还需要-terminal-verifier-吗">Q5. 加了 PRM 后还需要 terminal verifier 吗？</a></li>
+</ul>
+</li>
+<li><a href="#a-参考来源">§A 参考来源</a>
+</li>
+</ol>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">Agents · Credit Assignment</div>
+  <h1>Agentic RL Credit Assignment</h1>
+  <p class="subtitle">HGPO / SPA-RL / AgentPRM / ARPO / IGPO</p>
+  
+  <div class="meta">
+    <span><strong>Source:</strong> <code>knowledge/07_agents/agentic_rl_credit_assignment_tutorial.md</code></span>
+    <span><strong>SHA256:</strong> <code>740571be1eca</code></span>
+    <span><strong>Rendered:</strong> 2026-06-20 03:03 UTC</span>
+    
+  </div>
+</header>
+
+<h2 id="0-tldr-cheat-sheet">§0 TL;DR Cheat Sheet</h2>
+<blockquote><p><strong>Agentic RL 信用分配一句话</strong>：终点 reward 只知道整条 trajectory 成没成；credit assignment 要回答的是“哪一步真的让任务更接近成功，哪一步只是碰巧躺赢或背锅”。</p></blockquote>
+<ol><li><strong>最常见错分</strong>：GRPO / PPO 把 trajectory-level advantage 广播到所有 agent token。成功轨迹里的坏工具会被奖励，失败轨迹里的好搜索会被惩罚。observation token 仍必须 mask 掉，但这只解决“更新谁”，没解决“谁该负责”。</li><li><strong>三类方法谱系</strong>：State-anchored stepwise 在相同或相近 state 下比较 action；Process / Progress reward 额外学 step-level scorer；Intrinsic signal 从 policy 自身的不确定性或 belief 变化里找关键 turn。</li><li><strong>HGPO 的核心补丁</strong>：同一个网页 state 不一定有同一个历史上下文。HGPO 先按 state 对齐，再按历史 context 分层，避免把“看起来一样但前置信息不同”的决策混在一起算 advantage。</li><li><strong>SPA-RL 的核心补丁</strong>：把最终 reward 分摊成每一步 progress contribution，让 $\sum_t \hat c_t \approx R(\tau)$，再和 action 可执行性 / grounding 信号融合成 dense reward。</li><li><strong>AgentPRM 的核心补丁</strong>：把 PRM 当成 agent 版 $Q(s,a)$，学习“在这个 state 做这个 action 后，未来回报大概多少”。它既能训练 policy，也能在 inference 时做 Best-of-N action selection。</li><li><strong>ARPO 的核心补丁</strong>：工具返回后，模型接下来几十个 token 的 entropy 往往飙升；这些位置是高价值分叉点。ARPO 把 rollout budget 集中用在高不确定位置，并把分叉后的回报差异回传给关键 decision tokens。</li><li><strong>IGPO 的核心补丁</strong>：每轮工具调用或搜索应让模型更接近正确答案。IGPO 用 teacher forcing 计算 ground-truth answer log-prob 的增量，把 belief improvement 变成 turn-level reward。</li><li><strong>工程判断</strong>：能写 verifier 时先用 outcome reward + GRPO 建 baseline；credit 错分明显时，优先加轻量 intrinsic / progress signal；只有在任务复杂且数据充足时才训练独立 PRM。</li></ol>
+<h2 id="1-问题终点-reward-为什么会错分-credit">§1 问题：终点 Reward 为什么会错分 Credit</h2>
+<p>Agentic RL 的训练样本不是一段 response，而是一条 action / observation 交错的 trajectory：</p>
+<pre><code class="language-text">task
+  -&gt; action_1(search)
+  -&gt; observation_1(web snippets)
+  -&gt; action_2(open page)
+  -&gt; observation_2(page content)
+  -&gt; action_3(answer)
+  -&gt; reward R</code></pre>
+<p>标准 GRPO / PPO 会先把整条轨迹的 reward 变成 advantage，再乘到这条轨迹的所有 agent-generated tokens 上：</p>
+<p>$$ \nabla_\theta J \approx \sum_{t=1}^{T} m_t A(\tau)\nabla_\theta \log \pi_\theta(a_t \mid h_t) $$</p>
+<p>这里 $m_t$ 是 action mask：agent 生成的 thought / action / answer token 为 1，工具 observation / prompt / padding 为 0。mask 解决的是“哪些 token 能更新 policy”，但没有解决“这些 token 各自该拿多少 credit”。</p>
+<p>典型错分如下：</p>
+<table><thead><tr><th>轨迹</th><th>中间动作</th><th style="text-align:right">终点 reward</th><th>广播后问题</th></tr></thead><tbody><tr><td>$\tau_1$</td><td>好搜索 -&gt; 多余工具 -&gt; 答对</td><td style="text-align:right">1</td><td>多余工具也吃正 credit</td></tr><tr><td>$\tau_2$</td><td>好搜索 -&gt; 证据误读 -&gt; 答错</td><td style="text-align:right">0</td><td>好搜索也吃负 credit</td></tr><tr><td>$\tau_3$</td><td>错搜索 -&gt; 无效工具 -&gt; 答错</td><td style="text-align:right">0</td><td>错搜索和无效工具无法区分责任</td></tr></tbody></table>
+<p>所以 Agentic RL 的 credit assignment 不是“要不要 mask observation”，而是“terminal signal 如何落到 step-level decision 上”。</p>
+<h2 id="2-三类方法总览">§2 三类方法总览</h2>
+<table><thead><tr><th>方法族</th><th>代表方法</th><th>信号来源</th><th>最适合场景</th><th>主要代价</th></tr></thead><tbody><tr><td>State-anchored stepwise</td><td>GiGPO / HGPO</td><td>同 state 或同历史上下文下的相对回报</td><td>web / GUI / game 里 state 可对齐</td><td>需要足够多 rollout 碰到相似 state</td></tr><tr><td>Process / Progress reward</td><td>SPA-RL / AgentPRM / PiCA</td><td>额外训练的 step scorer、PRM、progress estimator</td><td>长 horizon、终点 reward 很稀疏</td><td>训练 scorer；可能 reward hacking</td></tr><tr><td>Intrinsic signal</td><td>ARPO / IGPO</td><td>entropy、answer belief improvement、policy 自身变化</td><td>search/tool-use，想少加外部模型</td><td>依赖不确定性或 ground truth 质量</td></tr></tbody></table>
+<p>三类方法不是互斥的。一个现实 pipeline 常见组合是：</p>
+<pre><code class="language-text">Outcome verifier
+  + format / length shaping
+  + intrinsic branch sampling
+  + optional PRM / progress reward</code></pre>
+<p>其中 outcome verifier 负责把方向钉住，dense / intrinsic signal 负责让中间步骤更可学。</p>
+<h2 id="3-state-anchored-stepwise同局面下比较动作">§3 State-Anchored Stepwise：同局面下比较动作</h2>
+<h3 id="31-gigpo--state-grouping-的直觉">3.1 GiGPO / State Grouping 的直觉</h3>
+<p>如果多个 rollout 来到同一个 state，就可以比较“在这个局面下不同 action 的后续回报”。设同一 state $s$ 下有 $K$ 条 continuation：</p>
+<p>$$ \{\tau_1, \ldots, \tau_K\}, \quad \tau_i = (s, a_i, o_{i,t+1}, \ldots, R_i) $$</p>
+<p>可以用组内相对回报给 action 局部 advantage：</p>
+<p>$$ \hat A(s, a_i)= \frac{R_i-\operatorname{mean}(R_1,\ldots,R_K)} {\operatorname{std}(R_1,\ldots,R_K)+\epsilon} $$</p>
+<p>这比整条轨迹广播更合理：它问的是“从同一个局面出发，哪个 action 更容易成功”。</p>
+<h3 id="32-hgpostate-相同还不够">3.2 HGPO：State 相同还不够</h3>
+<p>Web / GUI agent 里，“当前页面相同”不等于“决策上下文相同”。两个 agent 可能都来到购物车页面：</p>
+<ul><li>一个前面已经确认了颜色、尺码、预算、收货地址。</li><li>另一个只是乱点进购物车，关键约束都没读到。</li></ul>
+<p>如果只按当前 DOM / screenshot 分组，同一个 action 的意义会被混淆。HGPO 引入历史上下文一致性：先按 current state 分组，再按最近 $k$ 步 history 的相似度分层。</p>
+<p>一个简化形式：</p>
+<p>$$ G_{\ell}(s_t) = \{\tau_i \mid \operatorname{sim}(C_\ell(h_{i,t}), C_\ell(h_t)) \ge \delta_\ell\} $$</p>
+<p>其中 $C_\ell$ 是不同粒度的 context operator，例如最近 1 步、3 步、完整 task constraints。每层都能得到一个 relative advantage：</p>
+<p>$$ \hat A_\ell(s_t,a_t) = \frac{R_t-\mu(G_\ell)} {\sigma(G_\ell)+\epsilon} $$</p>
+<p>最后融合：</p>
+<p>$$ \hat A(s_t,a_t)=\sum_\ell w_\ell \hat A_\ell(s_t,a_t) $$</p>
+<h3 id="33-什么时候用这条线">3.3 什么时候用这条线</h3>
+<p>适合：</p>
+<ul><li>环境 state 可观测、可哈希或可相似度检索。</li><li>同一任务会产生多条 rollout，且经常在中间 state 汇合。</li><li>错分主要来自“同一局面下 action 好坏不清楚”。</li></ul>
+<p>不适合：</p>
+<ul><li>math / code 这类 state 不容易自然碰撞的任务。</li><li>每条轨迹状态几乎唯一，group 太小导致 $\sigma=0$ 或噪声很大。</li></ul>
+<h2 id="4-process--progress-reward给中间步骤打分">§4 Process / Progress Reward：给中间步骤打分</h2>
+<h3 id="41-spa-rl把终点-reward-分摊成-progress">4.1 SPA-RL：把终点 Reward 分摊成 Progress</h3>
+<p>SPA-RL 的目标不是直接判断一步“好/坏”，而是估计这一步对最终成功贡献了多少 progress。设 progress estimator 输出 $\hat c_t$：</p>
+<p>$$ \sum_{t=1}^{T} \hat c_t \approx R(\tau) $$</p>
+<p>如果最终成功，贡献应集中在真正推动任务的步骤上；如果失败，贡献应暴露哪些步骤没有推进或把任务带偏。</p>
+<p>实际 reward 常会融合 grounding signal $g_t$：action 是否可执行、是否产生有效 observation、是否违反环境约束。</p>
+<p>$$ r_t^{\text{SPA}} = \alpha \hat c_t + \beta g_t $$</p>
+<p>然后把 $r_t^{\text{SPA}}$ 放进 PPO / GRPO 的 reward tensor，让 GAE 或 group advantage 接手后续优化。</p>
+<h3 id="42-agentprm把-prm-当成-qsa">4.2 AgentPRM：把 PRM 当成 $Q(s,a)$</h3>
+<p>AgentPRM 更像 actor-critic：PRM 不只是评“推理步骤漂亮不漂亮”，而是近似 action value：</p>
+<p>$$ Q_\psi(s_t,a_t) \approx \mathbb{E}[R(\tau)\mid s_t,a_t] $$</p>
+<p>训练流程可以分三步：</p>
+<ol><li>用当前 policy 采样多条 agent trajectories。</li><li>用终点 verifier / reward 给轨迹打分，再回填到 state-action pair。</li><li>训练 PRM / Q model 预测从 $(s_t,a_t)$ 出发的未来回报。</li></ol>
+<p>训练 policy 时，可以用：</p>
+<p>$$ A_t = Q_\psi(s_t,a_t)-b(s_t) $$</p>
+<p>其中 $b(s_t)$ 可以是同 state 的均值、value baseline，或组内归一化 baseline。</p>
+<p>推理时 AgentPRM 还能做 Best-of-N：同一 state 采样多个候选 action，用 $Q_\psi(s,a)$ 选最高的一个执行。这会提高成功率，但也增加 inference cost。</p>
+<h3 id="43-pica把-pivot-step-变成-reward-tensor">4.3 PiCA：把 Pivot Step 变成 Reward Tensor</h3>
+<p>PiCA 的问题意识很直接：Search-R1 这类多跳检索任务，真正关键的是某次 pivot search 或 pivot reasoning turn。它用 step-PRM 找到“让模型从不会到会”的关键点，再把中间 reward 注入原有 PPO / GAE 流程。</p>
+<p>这条线的工程价值是：不用大改 trainer，不一定新增 value head；只要把 terminal-only reward 改成含 step reward 的 tensor，就能让 GAE 把 credit 沿时间回流。</p>
+<h2 id="5-intrinsic-signal从-policy-自己找关键点">§5 Intrinsic Signal：从 Policy 自己找关键点</h2>
+<h3 id="51-arpoentropy-高的位置更值得分叉">5.1 ARPO：Entropy 高的位置更值得分叉</h3>
+<p>工具返回之后，模型常常进入不确定区：证据冲突、下一步工具不明确、是否该停止不明确。ARPO 用 entropy 定位这些高价值分叉点。</p>
+<p>令第 $t$ 个 token 的 entropy 为：</p>
+<p>$$ H_t = -\sum_y \pi_\theta(y\mid h_t)\log \pi_\theta(y\mid h_t) $$</p>
+<p>ARPO 会在 entropy 峰值附近追加 partial rollout：</p>
+<pre><code class="language-text">shared prefix
+  -&gt; branch_1 continuation -&gt; R_1
+  -&gt; branch_2 continuation -&gt; R_2
+  -&gt; branch_3 continuation -&gt; R_3</code></pre>
+<p>共享前缀不应被所有 branch 的终点 reward 粗暴平均；关键是把分叉后的回报差异回传给触发分叉的 decision region。这样 rollout budget 用在“模型自己也拿不准”的位置，而不是平均铺到所有 token。</p>
+<p>适合：</p>
+<ul><li>search / tool-use，工具 observation 后存在明显不确定峰。</li><li>rollout 成本高，不能每个 step 都大量采样。</li></ul>
+<p>风险：</p>
+<ul><li>高 entropy 不一定是关键决策，也可能只是罕见词、日期、人名。</li><li>所以实际实现通常还会结合未来回报差异或 task-specific filter。</li></ul>
+<h3 id="52-igpo正确答案概率的增量">5.2 IGPO：正确答案概率的增量</h3>
+<p>IGPO 把每一轮交互看成 belief update。若已有 ground-truth answer $y^\*$，就可以在第 $t$ 轮历史 $h_{\le t}$ 下，用 teacher forcing 计算模型生成正确答案的平均 log probability：</p>
+<p>$$ \ell_t = \frac{1}{|y^\*|} \sum_{j=1}^{|y^\*|} \log \pi_\theta(y^\*_j \mid h_{\le t}, y^\*_{<j}) $$</p>
+<p>turn-level information gain：</p>
+<p>$$ r_t^{\text{IG}} = \ell_t - \ell_{t-1} $$</p>
+<p>如果某次搜索、读页、工具调用让模型更确信正确答案，$r_t^{\text{IG}}>0$；如果带偏，$r_t^{\text{IG}}<0$。IGPO 通常仍保留 terminal outcome reward，并分别做 group-wise normalization：</p>
+<p>$$ \hat A_t = \operatorname{norm}(R_{\text{outcome}}) + \lambda \operatorname{norm}(r_t^{\text{IG}}) $$</p>
+<p>优点：</p>
+<ul><li>不需要额外训练 PRM。</li><li>信号稠密，能定位哪一轮带来信息增益。</li></ul>
+<p>限制：</p>
+<ul><li>依赖高质量 ground truth。</li><li>多答案开放任务会被单一标注误导。</li><li>如果模型本身 calibration 很差，log-prob 增量会有噪声。</li></ul>
+<h2 id="6-训练接口credit-signal-怎么接进-ppo--grpo">§6 训练接口：Credit Signal 怎么接进 PPO / GRPO</h2>
+<h3 id="61-数据结构">6.1 数据结构</h3>
+<p>一个可扩展的 agent rollout batch 至少要区分四类字段：</p>
+<pre><code class="language-python">batch = {
+    &quot;input_ids&quot;: ...,       # full trajectory tokens
+    &quot;action_mask&quot;: ...,     # 1 = policy-generated token
+    &quot;step_ids&quot;: ...,        # token -&gt; agent step index
+    &quot;trajectory_reward&quot;: ..., # terminal / outcome reward
+    &quot;step_reward&quot;: ...,     # optional dense reward, shape [B, T_step]
+    &quot;old_log_probs&quot;: ...,
+}</code></pre>
+<p><code>action_mask</code> 仍是底线；<code>step_ids</code> 让 step-level reward 能 broadcast 到对应 action tokens；<code>step_reward</code> 可以来自 SPA-RL、AgentPRM、IGPO 或 PiCA。</p>
+<h3 id="62-reward-tensor-注入">6.2 Reward Tensor 注入</h3>
+<p>如果 step reward 已经可用，先构造 step return：</p>
+<p>$$ r_t = r_t^{\text{dense}} + \mathbb{1}[t=T]R_{\text{outcome}} $$</p>
+<p>然后：</p>
+<ul><li>PPO：用 <code>trajectory_gae(rewards, values, dones)</code> 得到 step advantage，再 broadcast 到该 step 的 action tokens。</li><li>GRPO：对同 prompt 多 rollout 的 terminal reward 做 group-relative advantage，同时把 dense reward 作为 per-step correction。</li><li>Critic-free 变体：对每条 trajectory 保留 trace-level advantage，再用 step credit 作为 multiplicative 或 additive weight。</li></ul>
+<h3 id="63-最小实现骨架">6.3 最小实现骨架</h3>
+<pre><code class="language-python">import torch
+
+def broadcast_step_credit_to_tokens(step_advantage, step_ids, action_mask):
+    &quot;&quot;&quot;
+    step_advantage: [B, T_step]
+    step_ids:       [B, L], token 所属 step，prompt/obs/pad 可设为 -1
+    action_mask:    [B, L], 只允许 agent token 更新
+    &quot;&quot;&quot;
+    B, L = step_ids.shape
+    token_adv = step_advantage.new_zeros(B, L)
+    valid = (step_ids &gt;= 0) &amp; action_mask.bool()
+    token_adv[valid] = step_advantage[
+        torch.arange(B, device=step_ids.device).unsqueeze(1).expand(B, L)[valid],
+        step_ids[valid],
+    ]
+    return token_adv * action_mask</code></pre>
+<p>关键 invariant：</p>
+<ul><li>observation token 不参与 log-prob loss。</li><li>dense reward 可以来自 observation 之后的判断，但只能更新导致它的 agent action。</li><li>如果一个 step 里包含 thought + action JSON，通常两者共享同一个 step advantage；如果要更细，可以再拆 token-level credit。</li></ul>
+<h2 id="7-选型决策树">§7 选型决策树</h2>
+<table><thead><tr><th>现象</th><th>优先尝试</th><th>原因</th></tr></thead><tbody><tr><td>group 经常全 0 / 全 1</td><td>dynamic sampling / curriculum / easier tasks</td><td>没有 reward 方差，任何 credit 方法都学不动</td></tr><tr><td>成功轨迹里有明显无效工具也被强化</td><td>length/tool penalty + step-level credit</td><td>先用 cheap shaping 控制坏习惯</td></tr><tr><td>失败轨迹里有好搜索但最终误读</td><td>IGPO / AgentPRM / PiCA</td><td>需要区分“信息获取对了”和“整合错了”</td></tr><tr><td>web state 经常重复出现</td><td>HGPO</td><td>同 state 多 rollout 可做局部相对比较</td></tr><tr><td>工具返回后分叉很多</td><td>ARPO</td><td>rollout budget 应集中到高不确定区</td></tr><tr><td>长任务需要高质量中间监督</td><td>SPA-RL / AgentPRM</td><td>terminal-only 太稀疏，需要学 scorer</td></tr></tbody></table>
+<h2 id="8-常见-failure-modes">§8 常见 Failure Modes</h2>
+<table><thead><tr><th>Failure mode</th><th>症状</th><th>缓解</th></tr></thead><tbody><tr><td>State aliasing</td><td>当前 state 一样但历史约束不同，advantage 互相污染</td><td>HGPO-style history grouping</td></tr><tr><td>PRM hacking</td><td>agent 学会取悦 step scorer，但终点成功率下降</td><td>terminal verifier 保持主权重；PRM 只做辅助</td></tr><tr><td>Entropy misfire</td><td>ARPO 分叉在罕见词、日期、人名上</td><td>entropy + future value delta 双信号过滤</td></tr><tr><td>Ground-truth overfit</td><td>IGPO 惩罚合理但非标注答案的路径</td><td>多答案 normalization；开放任务慎用 IGPO</td></tr><tr><td>Reward double counting</td><td>dense reward 和 terminal reward 重复奖励同一事件</td><td>分别 normalize；限制 dense reward 权重</td></tr><tr><td>Step boundary 错</td><td>一个 action 的 credit 被广播到前后无关 token</td><td>显式保存 step_ids / action spans</td></tr></tbody></table>
+<h2 id="9-高频面试题">§9 高频面试题</h2>
+<h3 id="q1-为什么-grpo-在-agent-上仍会有-credit-dilution">Q1. 为什么 GRPO 在 agent 上仍会有 credit dilution？</h3>
+<p>GRPO 省掉 critic，用组内相对 reward 做 trace-level advantage；这很稳，但一条成功轨迹的所有 agent token 共享同一个 advantage。长轨迹里真正关键的可能只有 2-3 个 action，其他 token 也被同等强化，所以会有 credit dilution。</p>
+<h3 id="q2-process-reward-和-progress-reward-有什么区别">Q2. Process reward 和 progress reward 有什么区别？</h3>
+<p>Process reward 通常评“这一步是否正确 / 合理”；progress reward 更强调“这一步让任务向最终目标推进了多少”。SPA-RL 属于 progress redistribution，AgentPRM 更像 $Q(s,a)$ / future return estimator。</p>
+<h3 id="q3-为什么同-state-比较-action-还要看-history">Q3. 为什么同 state 比较 action 还要看 history？</h3>
+<p>因为 agent state 往往是部分可观测的。网页页面相同，但 agent 是否已经读过约束、是否知道用户预算、是否完成前置步骤，会改变同一个 action 的好坏含义。HGPO 解决的是 historical context inconsistency。</p>
+<h3 id="q4-igpo-为什么不适合所有任务">Q4. IGPO 为什么不适合所有任务？</h3>
+<p>它依赖 ground-truth answer，并用正确答案 log-prob 的增量作为 reward。开放式任务、多答案任务、长代码 patch 任务很难定义一个稳定的 token-level ground truth；这时 IGPO 容易奖励“更像标注”而不是“真实更好”。</p>
+<h3 id="q5-加了-prm-后还需要-terminal-verifier-吗">Q5. 加了 PRM 后还需要 terminal verifier 吗？</h3>
+<p>需要。PRM 是辅助信号，容易被 hack 或学到表面相关特征；terminal verifier 是最终任务成功的锚。生产里通常让 terminal outcome 权重大于 process / progress reward。</p>
+<h2 id="a-参考来源">§A 参考来源</h2>
+<ul><li>本地参考：<code>Agentic-RL-Most-Detailed-Intro/Agentic RL入门2：信用分配.html</code></li><li>本地参考：<code>Agentic-RL-Most-Detailed-Intro/algorithms.html</code></li><li>交叉阅读：<code>07_agents/agentic_rl_tutorial.md</code> 的 §4 Long-horizon credit assignment 与 §7 code patterns。</li></ul>
+
+<footer style="margin-top:40px;padding-top:12px;border-top:1px solid #ddd;font-size:12px;color:#999;text-align:center;">
+  Generated at 2026-06-20 03:03 UTC · source <code>knowledge/07_agents/agentic_rl_credit_assignment_tutorial.md</code>
+</footer>
+</main>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "interview",
+  "description": "真实求职模拟面试：基于简历、岗位需求和知识库进行一题一答追问、评分和复盘。",
+  "trigger": "When the user enters 面试 mode.",
+  "flow": "flow.md",
+  "rubric": "rubric.md",
+  "constraints": [
+    "不编造经历",
+    "一次只问一个问题",
+    "不提前透题",
+    "不默认写入 knowledge/"
+  ]
+}

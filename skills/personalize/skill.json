@@ -1,0 +1,24 @@
+{
+  "name": "personalize",
+  "description": "Parse user's PDF resume and create personalized knowledge chapters based on their research background.",
+  "trigger": "When user uploads a PDF resume or requests background customization.",
+  "workflow": [
+    "1. Resume text is pre-extracted by the server and provided in the prompt context under 【简历原文】 — do NOT run pdftotext or parse the PDF yourself.",
+    "2. Identify: published papers, research directions, core algorithms used, and skill gaps.",
+    "3. Determine which evolution paths (A/B/C/D) are applicable.",
+    "4. Research online for each applicable path — fire the searches for the independent paths (A/B/C/D) IN PARALLEL (one batch of tool calls), not sequentially, to cut wall-clock time. Search recent ArXiv papers, GitHub repos, and technical blogs.",
+    "5. Persist the retrieved originals to knowledge/[NN]_personalized_research/personalized_research.sources/ — one NN_<slug>.md per source (key excerpt + URL + retrieval date + priority P0-P4) plus _manifest.md. Reference only: never register in INDEX_KB.md, never render to HTML.",
+    "6. Synthesize all research into ONE comprehensive draft HTML file in a new numbered chapter directory under knowledge/.",
+    "7. The single output should have sections organized by path (A/B/C/D), each with its research findings integrated.",
+    "8. Register the single draft in INDEX_KB.md under Pending Review.",
+    "9. Wait for user confirmation before promoting to official status."
+  ],
+  "paths": {
+    "A": "Academic paper deep-dive: extract user's publications, retrieve full paper, create math derivation + PyTorch implementation chapter.",
+    "B": "Research frontier expansion: identify user's main direction, search recent top-venue papers, create comparative survey chapter.",
+    "C": "Project algorithm first-principles: extract core algorithms from user's projects, create rigorous derivation chapter.",
+    "D": "Gap analysis: identify blind spots between user's background and target role, create remedial knowledge chapter."
+  },
+  "tools": [],
+  "output_format": "knowledge/[NN]_personalized_research/personalized_research.draft.html"
+}

@@ -1,0 +1,19 @@
+# macOS Finder metadata
+.DS_Store
+
+# Python runtime cache
+__pycache__/
+*.pyc
+
+# Transient agent process files (never knowledge/)
+.agent/inbox/
+.agent/outbox/
+.agent/uploads/
+.agent/interview/
+.agent/baguwen/
+.agent/history/
+.agent/personalize/
+tmp/
+
+# Local editor / assistant settings
+.claude/settings.local.json

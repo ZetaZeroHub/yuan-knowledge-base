@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Transformer Architecture Map</title>
+
+<meta name="source-path" content="knowledge/03_architecture/modern_transformer_architecture_map.md">
+<meta name="generated-at" content="2026-06-20 03:02 UTC">
+
+<!-- MathJax 3 -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+<!-- highlight.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+
+
+<style>
+:root {
+  --bg: #fdfcf7;
+  --bg-soft: #f4f1ea;
+  --bg-code: #f8f5ec;
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-muted: #6b6b6b;
+  --primary: #1a4a8c;
+  --primary-soft: #2d6cb8;
+  --accent: #b8390e;
+  --warn: #b45309;
+  --warn-bg: #fef3c7;
+  --info-bg: #dbeafe;
+  --good-bg: #d1fae5;
+  --good: #065f46;
+  --bad-bg: #fee2e2;
+  --bad: #991b1b;
+  --border: #d6d0c0;
+  --border-soft: #e8e3d5;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Source Serif Pro", "Source Serif 4", "Crimson Pro", "Georgia", "Songti SC", "STSong", serif;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+.layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 48px;
+  padding: 40px 32px;
+}
+
+nav.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  font-size: 13px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border-soft);
+  padding-right: 16px;
+}
+nav.toc h3 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+nav.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
+nav.toc ol li { margin: 5px 0; counter-increment: toc; }
+nav.toc ol li::before { content: counter(toc) ". "; color: var(--ink-muted); margin-right: 4px; }
+nav.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted transparent;
+}
+nav.toc a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+nav.toc ul { list-style: none; padding-left: 14px; margin: 3px 0; font-size: 12px; }
+nav.toc ul li::before { content: "→ "; color: var(--border); }
+
+main { min-width: 0; }
+
+header.hero {
+  border-bottom: 3px double var(--primary);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+}
+header.hero .eyebrow {
+  color: var(--accent);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+header.hero h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+header.hero .subtitle {
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+  font-style: italic;
+}
+header.hero .byline {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+header.hero .byline strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+header.hero .meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 14px;
+}
+header.hero .meta span strong { color: var(--ink-soft); }
+header.hero .meta code {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 11px;
+  background: var(--bg-soft);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+}
+
+h2 {
+  font-size: 24px;
+  margin: 44px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  font-weight: 700;
+}
+h2 .num { color: var(--primary); font-weight: 600; margin-right: 8px; }
+h3 { font-size: 19px; margin: 28px 0 10px; color: var(--primary); font-weight: 600; }
+h4 { font-size: 16px; margin: 20px 0 8px; color: var(--ink); font-weight: 600; }
+
+p { margin: 10px 0; }
+ul, ol { padding-left: 22px; margin: 10px 0; }
+ul li, ol li { margin: 4px 0; }
+ul li::marker { color: var(--primary); }
+
+strong { color: var(--accent); font-weight: 600; }
+em { color: var(--ink-soft); }
+
+a { color: var(--primary); }
+a:hover { color: var(--accent); }
+
+code:not(.hljs) {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.86em;
+  background: var(--bg-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  color: var(--accent);
+}
+
+pre {
+  background: #fafaf6;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  padding: 0;
+  overflow-x: auto;
+  border-radius: 4px;
+  margin: 14px 0;
+}
+pre code, pre code.hljs {
+  background: transparent !important;
+  display: block;
+  padding: 14px 18px !important;
+  font-size: 13px;
+  line-height: 1.55;
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+  color: var(--ink);
+}
+pre.diagram {
+  background: #f9f6ed;
+  border-left: 4px solid var(--accent);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.callout {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  font-size: 15px;
+}
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.callout-info { background: var(--info-bg); border-left-color: var(--primary); }
+.callout-info .callout-title { color: var(--primary); }
+.callout-warn { background: var(--warn-bg); border-left-color: var(--warn); }
+.callout-warn .callout-title { color: var(--warn); }
+.callout-good { background: var(--good-bg); border-left-color: var(--good); }
+.callout-good .callout-title { color: var(--good); }
+.callout-bad { background: var(--bad-bg); border-left-color: var(--bad); }
+.callout-bad .callout-title { color: var(--bad); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+thead { background: var(--primary); color: white; }
+th, td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+th { font-weight: 600; font-size: 13px; letter-spacing: 0.02em; }
+tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--bg-soft); }
+
+details.qa, details {
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  margin: 10px 0;
+  padding: 0;
+}
+details summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary);
+  list-style: none;
+  user-select: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸ ";
+  margin-right: 4px;
+  display: inline-block;
+  transition: transform 0.15s;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details[open] summary { border-bottom: 1px solid var(--border-soft); }
+details > :not(summary) { padding: 10px 14px; }
+details p:first-of-type { margin-top: 8px; }
+
+mjx-container[display="true"] { margin: 12px 0 !important; }
+
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 20px; padding: 20px 16px; }
+  nav.toc {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-soft);
+    padding-right: 0;
+    padding-bottom: 14px;
+  }
+  header.hero h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+}
+@media print {
+  nav.toc { display: none; }
+  .layout { grid-template-columns: 1fr; padding: 0; }
+  body { background: white; }
+  header.hero { border-bottom-color: var(--ink); }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+<li><a href="#0-tldr-cheat-sheet">§0 TL;DR Cheat Sheet</a>
+</li>
+<li><a href="#1-总览六个正交问题">§1 总览：六个正交问题</a>
+</li>
+<li><a href="#2-位置编码rope-到-decoupled-rope">§2 位置编码：RoPE 到 Decoupled RoPE</a>
+<ul>
+<li><a href="#21-rope-的核心不变量">2.1 RoPE 的核心不变量</a></li>
+<li><a href="#22-长上下文扩展配方">2.2 长上下文扩展配方</a></li>
+<li><a href="#23-decoupled-rope-与-mla">2.3 Decoupled RoPE 与 MLA</a></li>
+</ul>
+</li>
+<li><a href="#3-attention-全家桶">§3 Attention 全家桶</a>
+<ul>
+<li><a href="#31-mha--mqa--gqa--mla">3.1 MHA / MQA / GQA / MLA</a></li>
+<li><a href="#32-sliding-window-与流式注意力">3.2 Sliding Window 与流式注意力</a></li>
+<li><a href="#33-dsa--nsa--moba">3.3 DSA / NSA / MoBA</a></li>
+<li><a href="#34-linear-attention--ssm--hybrid">3.4 Linear Attention / SSM / Hybrid</a></li>
+</ul>
+</li>
+<li><a href="#4-归一化与训练稳定">§4 归一化与训练稳定</a>
+<ul>
+<li><a href="#41-rmsnorm-是-decoder-only-主流默认">4.1 RMSNorm 是 decoder-only 主流默认</a></li>
+<li><a href="#42-qk-norm-与-soft-capping">4.2 QK-Norm 与 Soft-Capping</a></li>
+<li><a href="#43-deepnorm--layerscale--p">4.3 DeepNorm / LayerScale / μP</a></li>
+</ul>
+</li>
+<li><a href="#5-moe容量路由与系统">§5 MoE：容量、路由与系统</a>
+</li>
+<li><a href="#6-mtpmulti-token-prediction">§6 MTP：Multi-Token Prediction</a>
+</li>
+<li><a href="#7-prefill--decode-与-serving-组合">§7 Prefill / Decode 与 Serving 组合</a>
+<ul>
+<li><a href="#71-prefill-vs-decode">7.1 Prefill vs Decode</a></li>
+<li><a href="#72-现代-serving-stack">7.2 现代 Serving Stack</a></li>
+</ul>
+</li>
+<li><a href="#8-面试速查表">§8 面试速查表</a>
+</li>
+<li><a href="#a-参考来源">§A 参考来源</a>
+</li>
+</ol>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">Architecture · Foundation Models</div>
+  <h1>Modern Transformer Architecture Map</h1>
+  <p class="subtitle">RoPE · MLA · Sparse Attention · SSM · Norms · MoE · MTP · Serving</p>
+  
+  <div class="meta">
+    <span><strong>Source:</strong> <code>knowledge/03_architecture/modern_transformer_architecture_map.md</code></span>
+    <span><strong>SHA256:</strong> <code>31fb834fe2cb</code></span>
+    <span><strong>Rendered:</strong> 2026-06-20 03:02 UTC</span>
+    
+  </div>
+</header>
+
+<h2 id="0-tldr-cheat-sheet">§0 TL;DR Cheat Sheet</h2>
+<blockquote><p><strong>Modern Transformer Architecture Map</strong> 是一张“当代基座模型组件地图”：位置编码、attention 变体、归一化、MoE、MTP、KV cache 各自解决不同瓶颈，不能混成一个技术点。</p></blockquote>
+<ol><li><strong>位置编码层</strong>：RoPE 是事实标准；长上下文常用大 base + YaRN / Dynamic NTK；MLA 系必须做 decoupled RoPE，因为 RoPE 旋转矩阵不能被低秩 K/V 投影安全吸收。</li><li><strong>KV cache 层</strong>：MHA -&gt; MQA -&gt; GQA 是减少 KV head；MLA 是把 K/V 压成 latent；两者都主要服务 decode 阶段的显存和带宽，不等价于“减少所有 attention FLOPs”。</li><li><strong>稀疏 attention 层</strong>：Sliding Window、StreamingLLM、NSA、DSA、MoBA 都在削 $O(L^2)$ 或长上下文访存；它们和 RoPE 外推、KV cache 压缩是正交维度。</li><li><strong>Linear / SSM hybrid 层</strong>：Mamba / Mamba-2 / linear attention 把长序列复杂度降到近线性，但纯 SSM 难覆盖所有 retrieval / in-context learning 行为，所以现实路线多是 hybrid。</li><li><strong>归一化层</strong>：RMSNorm 是 decoder-only LLM 主流；QK-Norm / soft-capping 主要防 attention logits 失控和 loss spike；DeepNorm / LayerScale / μP 属于深层稳定训练工具箱。</li><li><strong>MoE 层</strong>：DeepSeekMoE / Qwen-MoE 的重点不是“参数多”，而是 fine-grained expert、shared expert、aux-loss-free balance、EP all-to-all 等训练和推理工程。</li><li><strong>MTP 层</strong>：Multi-Token Prediction 给 next-token objective 加密集监督，也可在推理时作为 draft head 做 speculative decoding；它和 Medusa / EAGLE 的关系是“训练目标 + 推理加速头”的桥。</li><li><strong>推理系统层</strong>：Prefill 是 compute-bound，decode 是 memory-bandwidth-bound。现代 serving 优化通常把 chunked prefill、paged KV、speculative decoding、KV quant、GQA/MLA 组合使用。</li></ol>
+<h2 id="1-总览六个正交问题">§1 总览：六个正交问题</h2>
+<table><thead><tr><th>问题</th><th>代表组件</th><th>主要收益</th><th>常见误解</th></tr></thead><tbody><tr><td>位置如何表示</td><td>RoPE / YaRN / Dynamic NTK</td><td>长上下文外推</td><td>以为它会降低 KV cache</td></tr><tr><td>KV 怎么存</td><td>MQA / GQA / MLA</td><td>decode 显存和带宽</td><td>以为它等价减少 Q/O 计算</td></tr><tr><td>注意力怎么稀疏</td><td>SWA / NSA / DSA / MoBA</td><td>降 $L^2$ 成本</td><td>以为稀疏注意力自动有全局记忆</td></tr><tr><td>长序列怎么替代 attention</td><td>Linear Attention / SSM / Hybrid</td><td>近线性复杂度</td><td>以为纯 SSM 一定替代 Transformer</td></tr><tr><td>训练怎么稳定</td><td>RMSNorm / QK-Norm / soft-capping / DeepNorm</td><td>防 logit spike、梯度不稳</td><td>以为 normalization 只影响收敛速度</td></tr><tr><td>容量怎么扩</td><td>MoE / MTP</td><td>参数容量、dense supervision、推理加速</td><td>以为 sparse activation 免费</td></tr></tbody></table>
+<p>现代基座通常不是“选择一个技术”，而是在每层叠配方。例如 DeepSeek-V 系可以同时用 MLA、decoupled RoPE、MoE、MTP、aux-loss-free routing；Qwen / Llama / Mistral 系则常见 GQA + 大 RoPE base + YaRN + SWA 或推理系统优化。</p>
+<h2 id="2-位置编码rope-到-decoupled-rope">§2 位置编码：RoPE 到 Decoupled RoPE</h2>
+<h3 id="21-rope-的核心不变量">2.1 RoPE 的核心不变量</h3>
+<p>RoPE 对 Q/K 做二维旋转，使 attention score 依赖相对位置：</p>
+<p>$$ (R_m q)^\top(R_n k)=q^\top R_{n-m}k $$</p>
+<p>因此位置信息进入 $q^\top k$ 打分，而不是进入 V。V 是被加权求和的内容，旋转 V 一般没有收益。</p>
+<h3 id="22-长上下文扩展配方">2.2 长上下文扩展配方</h3>
+<table><thead><tr><th>方法</th><th>做法</th><th>优点</th><th>代价</th></tr></thead><tbody><tr><td>PI</td><td>把位置 $m$ 压到 $m/s$</td><td>实现最简单</td><td>高频分辨率受损</td></tr><tr><td>NTK-aware</td><td>改 RoPE base，让低频更适配长距</td><td>零样本外推较稳</td><td>频段控制粗</td></tr><tr><td>YaRN</td><td>分频段缩放 + attention temperature</td><td>工业常用，兼顾短/长距</td><td>需要短微调更稳</td></tr><tr><td>Dynamic NTK</td><td>根据当前长度动态改 scaling</td><td>服务端适应变长请求</td><td>实现要处理 cache 一致性</td></tr></tbody></table>
+<h3 id="23-decoupled-rope-与-mla">2.3 Decoupled RoPE 与 MLA</h3>
+<p>MLA 把 K/V 压成 latent cache：</p>
+<p>$$ c_t^{KV}=W^{DKV}h_t $$</p>
+<p>如果直接对 latent K 套 RoPE，旋转矩阵会随相对位置变化，不能被吸收到固定投影矩阵里，MLA 的 inference trick 会失效。解法是把 attention head 分成两段：</p>
+<p>$$ q^\top k = q_{\text{rope}}^\top k_{\text{rope}} + q_{\text{nope}}^\top k_{\text{nope}} $$</p>
+<p>其中小维度 RoPE key 单独缓存并跨 head 共享，大部分内容通道走低秩 latent，不施加 RoPE。</p>
+<h2 id="3-attention-全家桶">§3 Attention 全家桶</h2>
+<h3 id="31-mha--mqa--gqa--mla">3.1 MHA / MQA / GQA / MLA</h3>
+<table><thead><tr><th>变体</th><th>K/V heads 或 cache</th><th>主要收益</th><th>用法</th></tr></thead><tbody><tr><td>MHA</td><td>每个 Q head 独立 K/V</td><td>质量基线</td><td>小模型或训练基线</td></tr><tr><td>MQA</td><td>所有 Q head 共享 1 组 K/V</td><td>KV cache 最省</td><td>质量可能受损</td></tr><tr><td>GQA</td><td>$G$ 组 K/V，被多组 Q 共享</td><td>质量/显存折中</td><td>Llama / Mistral / Qwen 常见</td></tr><tr><td>MLA</td><td>cache 低秩 latent + RoPE 通道</td><td>比 GQA 更激进压缩 KV</td><td>DeepSeek-V 系</td></tr></tbody></table>
+<p>要点：MQA/GQA 改的是 K/V head 数；MLA 改的是 K/V 表示本身。说“MLA 是极端 GQA”不准确。</p>
+<h3 id="32-sliding-window-与流式注意力">3.2 Sliding Window 与流式注意力</h3>
+<p>Sliding Window Attention 只看最近 $W$ 个 token，把每层 attention 从 $O(L^2)$ 降成 $O(LW)$。多层堆叠后感受野可以扩散，但单层仍看不到 window 外。</p>
+<p>StreamingLLM 保留少量 attention sink token + 最近窗口，让模型可以长时间流式生成而不爆 KV cache。但它不是完整长上下文：window 外内容被丢掉后，模型真的看不到。</p>
+<h3 id="33-dsa--nsa--moba">3.3 DSA / NSA / MoBA</h3>
+<p>这些方法都在试图让稀疏注意力更“原生”：</p>
+<table><thead><tr><th>方法</th><th>核心想法</th><th>适合记忆点</th></tr></thead><tbody><tr><td>DSA</td><td>用可学习或结构化稀疏模式替代 dense attention</td><td>稀疏不是后处理，而是训练内生</td></tr><tr><td>NSA</td><td>compressed / selected / sliding 三类分支并行</td><td>同时保留局部、压缩全局和关键块选择</td></tr><tr><td>MoBA</td><td>把序列分块，按 block routing 选择 top-k block</td><td>像 MoE 一样给 attention blocks 做路由</td></tr></tbody></table>
+<p>它们和 Longformer / BigBird 的传统稀疏 pattern 差别在于：现代方法更强调端到端训练、动态选择和与 KV cache / serving 的兼容。</p>
+<h3 id="34-linear-attention--ssm--hybrid">3.4 Linear Attention / SSM / Hybrid</h3>
+<p>Linear attention 把 softmax attention 改写为 kernel feature 累积：</p>
+<p>$$ \operatorname{Attn}(Q,K,V)_t \approx \frac{\phi(q_t)^\top \sum_{i\le t}\phi(k_i)v_i^\top} {\phi(q_t)^\top \sum_{i\le t}\phi(k_i)} $$</p>
+<p>SSM / Mamba 系用选择性状态空间和并行 scan 表达长序列依赖。优势是长序列近线性；短板是强 retrieval、精确复制、复杂 in-context binding 仍常依赖 attention。因此现实基座常用 hybrid：部分层是 attention，部分层是 SSM / linear attention。</p>
+<h2 id="4-归一化与训练稳定">§4 归一化与训练稳定</h2>
+<h3 id="41-rmsnorm-是-decoder-only-主流默认">4.1 RMSNorm 是 decoder-only 主流默认</h3>
+<p>RMSNorm 去掉均值中心化，只按均方根缩放：</p>
+<p>$$ \operatorname{RMSNorm}(x)= \frac{x}{\sqrt{\frac{1}{d}\sum_i x_i^2+\epsilon}}\odot g $$</p>
+<p>它比 LayerNorm 更省算，和 pre-norm residual stack 配合稳定，已成为很多 decoder-only LLM 的默认选择。</p>
+<h3 id="42-qk-norm-与-soft-capping">4.2 QK-Norm 与 Soft-Capping</h3>
+<p>大模型训练的 attention logit spike 常来自 $q \cdot k$ 范数失控。QK-Norm 在 Q/K 上做归一化，让 attention logits 更可控：</p>
+<p>$$ \tilde q = \frac{q}{\|q\|}, \quad \tilde k = \frac{k}{\|k\|} $$</p>
+<p>Soft-capping 则对 logits 做平滑限幅，例如：</p>
+<p>$$ \operatorname{softcap}(x)=c\tanh(x/c) $$</p>
+<p>直觉：不要让极端 logit 把 softmax 变成几乎 one-hot，从而导致梯度和 loss spike。</p>
+<h3 id="43-deepnorm--layerscale--p">4.3 DeepNorm / LayerScale / μP</h3>
+<table><thead><tr><th>方法</th><th>用途</th><th>一句话</th></tr></thead><tbody><tr><td>DeepNorm</td><td>超深 Transformer 稳定训练</td><td>调 residual 分支尺度，让深层梯度更稳</td></tr><tr><td>LayerScale</td><td>残差分支可学习小尺度</td><td>从接近恒等映射开始训练</td></tr><tr><td>μP</td><td>宽度扩展时保持超参可迁移</td><td>用参数化规则让小模型调参能迁移到大模型</td></tr></tbody></table>
+<p>这些组件不一定每个现代基座都用，但它们属于“训练越深越大时必须懂的稳定性工具箱”。</p>
+<h2 id="5-moe容量路由与系统">§5 MoE：容量、路由与系统</h2>
+<p>MoE 的核心不是简单把参数变多，而是每个 token 只激活少数 experts：</p>
+<p>$$ y=\sum_{i\in \operatorname{TopK}(g(x))}\tilde g_i(x)E_i(x) $$</p>
+<p>现代 MoE 面试常考四点：</p>
+<ol><li><strong>Fine-grained experts</strong>：把大 expert 拆成更多小 expert，每 token 选更多小 expert，提高组合性。</li><li><strong>Shared experts</strong>：少数 shared expert 对所有 token 激活，吸收通用能力，routed experts 更专精。</li><li><strong>Aux-loss-free balance</strong>：通过 expert bias 调 top-k 选择，不把 load-balance loss 的干扰梯度加进主训练。</li><li><strong>Expert Parallelism</strong>：token dispatch / combine 需要 all-to-all，通信和负载均衡决定真实吞吐。</li></ol>
+<p>交叉阅读：<code>03_architecture/moe_tutorial.md</code> 已经有完整推导、代码和 DeepSeek-V3 系统细节。</p>
+<h2 id="6-mtpmulti-token-prediction">§6 MTP：Multi-Token Prediction</h2>
+<p>Next-token prediction 每个位置只监督下一个 token；MTP 让同一个 hidden state 预测未来多个 token：</p>
+<p>$$ \mathcal{L}_{\text{MTP}} = \sum_{k=1}^{K}\lambda_k \operatorname{CE}(p_\theta(x_{t+k}\mid h_t), x_{t+k}) $$</p>
+<p>收益：</p>
+<ul><li>训练时给更密集的未来 token 监督。</li><li>推理时 MTP head 可以作为 draft model，配合 speculative decoding。</li><li>对 reasoning / code 这类长依赖任务，MTP 可能帮助模型提前规划局部 token 序列。</li></ul>
+<p>与 Medusa / EAGLE 对比：</p>
+<table><thead><tr><th>方法</th><th>核心</th><th>训练位置</th></tr></thead><tbody><tr><td>MTP</td><td>主模型附带多步预测目标</td><td>预训练 / continued training</td></tr><tr><td>Medusa</td><td>多个并行 draft heads</td><td>常作为推理加速 finetune</td></tr><tr><td>EAGLE</td><td>用 feature-level extrapolation draft</td><td>推理加速模型</td></tr></tbody></table>
+<h2 id="7-prefill--decode-与-serving-组合">§7 Prefill / Decode 与 Serving 组合</h2>
+<h3 id="71-prefill-vs-decode">7.1 Prefill vs Decode</h3>
+<table><thead><tr><th>阶段</th><th>输入</th><th>瓶颈</th><th>典型优化</th></tr></thead><tbody><tr><td>Prefill</td><td>长 prompt 一次算完</td><td>compute-bound，$L^2$ attention</td><td>FlashAttention、chunked prefill、context parallel</td></tr><tr><td>Decode</td><td>每步生成 1 token</td><td>memory-bandwidth-bound，读权重和 KV</td><td>KV cache、GQA/MLA、PagedAttention、KV quant</td></tr></tbody></table>
+<p>这解释了为什么同一项技术在两个阶段效果不同：weight-only quant 对 decode 很有用，但 prefill 可能不明显；KV cache 压缩主要救 decode，而不是 prefill 的 $L^2$ attention。</p>
+<h3 id="72-现代-serving-stack">7.2 现代 Serving Stack</h3>
+<p>一个现实组合常长这样：</p>
+<pre><code class="language-text">Architecture:
+  GQA or MLA
+  + RoPE scaling / YaRN
+  + optional SWA / sparse attention
+
+Runtime:
+  Paged KV cache
+  + chunked prefill
+  + continuous batching
+  + speculative decoding
+  + KV quantization</code></pre>
+<p>不要把 architecture 和 runtime 混在一起。GQA/MLA 是模型结构；PagedAttention / continuous batching 是 serving 系统；speculative decoding 可以用 MTP / Medusa / EAGLE 提供 draft。</p>
+<h2 id="8-面试速查表">§8 面试速查表</h2>
+<table><thead><tr><th>问题</th><th>30 秒答案</th></tr></thead><tbody><tr><td>MLA 和 GQA 区别？</td><td>GQA 共享 K/V heads；MLA cache 低秩 latent，并用 decoupled RoPE 保留位置通道。</td></tr><tr><td>YaRN 解决什么？</td><td>RoPE 长上下文外推：分频段缩放 + attention temperature，兼顾高频近距和低频远距。</td></tr><tr><td>NSA / MoBA 和 SWA 区别？</td><td>SWA 是固定局部窗口；NSA / MoBA 更强调动态选择、压缩全局和端到端稀疏路由。</td></tr><tr><td>QK-Norm 有什么用？</td><td>控制 Q/K 范数，防 attention logits spike，提升大模型训练稳定性。</td></tr><tr><td>MTP 是训练还是推理技术？</td><td>两者都有：训练时多步预测辅助目标，推理时可作为 draft head 做 speculative decoding。</td></tr><tr><td>Prefill 和 decode 瓶颈？</td><td>Prefill compute-bound；decode memory-bandwidth-bound。</td></tr></tbody></table>
+<h2 id="a-参考来源">§A 参考来源</h2>
+<ul><li>本地参考：<code>Agentic-RL-Most-Detailed-Intro/Agentic RL入门3：transformer架构.html</code></li><li>交叉阅读：<code>01_general/attention_tutorial.md</code></li><li>交叉阅读：<code>01_general/kv_cache_speculative_decoding_tutorial.md</code></li><li>交叉阅读：<code>03_architecture/long_context_rope_yarn_mla_tutorial.md</code></li><li>交叉阅读：<code>03_architecture/moe_tutorial.md</code></li></ul>
+
+<footer style="margin-top:40px;padding-top:12px;border-top:1px solid #ddd;font-size:12px;color:#999;text-align:center;">
+  Generated at 2026-06-20 03:02 UTC · source <code>knowledge/03_architecture/modern_transformer_architecture_map.md</code>
+</footer>
+</main>
+
+</div>
+</body>
+</html>

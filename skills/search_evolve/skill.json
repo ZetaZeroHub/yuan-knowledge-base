@@ -1,0 +1,30 @@
+{
+  "name": "search_evolve",
+  "description": "Systematic web search and knowledge evolution: retrieve, validate, and compile new knowledge chapters from authoritative sources.",
+  "trigger": "When user requests a direction search, citation tracking, or algorithm synthesis.",
+  "priority_matrix": {
+    "P0": "ArXiv papers & top-venue publications (must have real ArXiv ID or venue)",
+    "P1": "Official tech whitepapers & vendor docs (OpenAI, Anthropic, DeepSeek, etc.)",
+    "P2": "High-star GitHub repositories with reference implementations",
+    "P3": "Expert-level deep blog posts (HF Blog, Lilian Weng, etc.)",
+    "P4": "Social media fragments (Twitter/X) — news leads only, never cite as derivation source"
+  },
+  "quality_gate": {
+    "required": [
+      "Rigorous math derivations with defined variables",
+      "Runnable PyTorch code with import torch and shape annotations",
+      "Real citations with year and ArXiv link"
+    ],
+    "forbidden": [
+      "Vague summaries without concrete metrics",
+      "Deprecated API calls",
+      "Pseudocode without math backing"
+    ]
+  },
+  "templates": "search_prompts.md",
+  "output_format": "knowledge/[NN]_[topic]/*.draft.html",
+  "raw_sources": {
+    "dir": "knowledge/[NN]_[topic]/[note_stem].sources/",
+    "rule": "Before condensing retrieved material into the note, persist each source there as NN_<slug>.md (key excerpt + source URL + retrieval date + priority P0-P4), plus a _manifest.md index. Reference only: never register in INDEX_KB.md, never render to HTML."
+  }
+}

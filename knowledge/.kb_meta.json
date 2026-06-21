@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "chapters": {},
+  "order": {
+    "07_agents": [
+      "07_agents/agent_foundations_tutorial.html",
+      "07_agents/agentic_rl_tutorial.html",
+      "07_agents/agentic_rl_credit_assignment_tutorial.html",
+      "07_agents/multi_agent_long_horizon_tutorial.html",
+      "07_agents/self_evolving_agents_tutorial.html"
+    ],
+    "06_multimodal": [
+      "06_multimodal/vlm_multimodal_tutorial.html"
+    ],
+    "04_generative_theory": [
+      "04_generative_theory/diffusion_foundations_tutorial.html",
+      "04_generative_theory/flow_matching_tutorial.html",
+      "04_generative_theory/vae_vqvae_vqgan_tutorial.html"
+    ],
+    "05_generation_systems": [
+      "05_generation_systems/3d_generation_tutorial.html",
+      "05_generation_systems/diffusion_distillation_tutorial.html",
+      "05_generation_systems/diffusion_post_training_tutorial.html",
+      "05_generation_systems/image_generation_systems_tutorial.html",
+      "05_generation_systems/video_generation_tutorial.html"
+    ],
+    "03_architecture": [
+      "03_architecture/modern_transformer_architecture_map.html",
+      "03_architecture/llm_opd_tutorial.html",
+      "03_architecture/long_context_rope_yarn_mla_tutorial.html",
+      "03_architecture/moe_tutorial.html"
+    ]
+  }
+}

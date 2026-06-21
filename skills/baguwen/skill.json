@@ -1,0 +1,8 @@
+{
+  "name": "baguwen",
+  "description": "Knowledge-base oral quiz (八股): the agent quizzes the user chapter-by-chapter, probes weak points, and logs blind spots.",
+  "trigger": "When the user enters 八股 (interview) mode on an open chapter.",
+  "flow": "flow.md",
+  "notes_format": "问题 / 用户回答 / 缺口 / 正确要点",
+  "constraints": ["read-only except appending the blind-spot notes file", "全程中文", "一次只抛一个问题"]
+}
