@@ -1,133 +1,106 @@
-# Yuan Knowledge Base
+# 元知识库
 
-[English](README.md)
+一个可以检索资料、背八股、模拟面试的个性化知识工作台。
 
-Yuan Knowledge Base 是一个本地优先的个人 AI 知识工作台，用来构建、浏览、演化和练习自己的技术知识库。它把轻量 Web 控制台、文件式 Agent IPC、Markdown/HTML 知识笔记，以及可扩展的 workspace skills 放在同一个项目里。
+## 项目简介
 
-这个项目面向 Agent 辅助学习流程：检索一个主题，保留原始资料，生成可审稿的知识笔记，用八股/面试模式练习，再按需要创建或修改自己的 skill。
+**元知识库** 旨在打造一个真正属于自己的个性化知识库，把分散在各处的信息系统地汇总起来；并在学习、提问、复盘和模拟面试的过程中，逐步内化为自己的知识和能力。
 
-## 亮点
+---
 
-- **本地 Web 控制台**：在 `paper-ui/` 中浏览知识库、与 Agent 对话、上传 PDF、查看任务进度、切换运行配置。
-- **Agent 驱动的知识演化**：通过 Codex 或 Claude Code 检索主题、生成 draft 章节、更新索引并渲染笔记。
-- **内置学习模式**：
-  - `检索`：根据研究任务生成知识笔记。
-  - `八股`：围绕当前打开的知识章节进行口测练习。
-  - `面试`：结合简历和 JD 进行模拟面试。
-  - `元 skill`：通过结构化澄清流程新建或修改 workspace skill。
-  - 默认 `Agent`：自由对话和工作区协助，不进入完整知识生成管线。
-- **可审稿的知识流程**：新知识先生成 draft，确认后再提升为正式内容。
-- **原始资料留存**：来自联网检索的笔记可以在同级 `.sources/` 目录中保留原文摘录，方便后续复核。
-- **可续聊历史**：对话历史以 JSON 形式保存在 `.agent/history/`。
-- **可扩展 skills**：`skills/` 下每个子目录都是一个可复用工作流或工具。
+## 冷启动知识库
 
-## 快速启动
+冷启动内容继承自 ARIS-in-AI-Offer：
 
-### macOS
+![冷启动知识库](Figure/Fig1.png)
 
-```bash
-./start.command
-```
+项目按照方向分类，整理了 AI 面试和学习中的常见知识点，包括原理、公式推导和代码。
 
-### Windows
+主要包含以下方向：
 
-```bat
-start.bat
-```
+- AI 通用基础
+- 后训练与对齐
+- 模型架构
+- 生成理论
+- 生成系统
+- 多模态
+- Agent
 
-### 手动启动
 
-```bash
-python3 -u server.py --port 8741 --bind 127.0.0.1 --agent codex
-```
+---
 
-然后打开：
+## 页面布局
 
-```text
-http://127.0.0.1:8741/paper-ui/index.html
-```
+元知识库前端采用三栏布局：
 
-启动脚本保留了 legacy compatibility 环境变量 `EVOLVEKB_PORT` 和 `EVOLVEKB_AGENT`：
+![元知识库三栏页面布局](Figure/Fig2.png)
 
-```bash
-EVOLVEKB_PORT=8741 EVOLVEKB_AGENT=codex ./start.command
-```
+### 1. 左侧：知识目录
 
-## 运行要求
+已有文章、后续检索生成的新内容，都会放在这里，方便统一管理和查找。
 
-- Python 3.10+
-- 现代浏览器
-- 可选，Agent 工作流需要：
-  - Codex CLI，或
-  - Claude Code CLI
+### 2. 中间：阅读区
 
-只浏览已有知识库时，本地 server 就够了。生成知识、面试反馈、修改 skill 等 Agent 能力，需要安装并登录所选择的 CLI。
+知识章节以 `html + md` 的形式存储：
 
-## 项目结构
+- `html` 用于人类阅读
+- `md` 用于 Agent 理解和处理
 
-```text
-yuan-knowledge-base-workspace/
-├── INDEX.md              # 给人和 Agent 看的工作区规则
-├── server.py             # 本地服务、API、Agent IPC、prompt 路由
-├── paper-ui/             # 浏览器控制台
-├── knowledge/            # Markdown/HTML 知识库
-│   ├── INDEX_KB.md       # 知识库路由表和 Pending Review 索引
-│   └── 01_* ... 07_*     # 冷启动精选章节
-├── skills/               # Agent 可读取的 skills 和工具
-│   ├── baguwen/
-│   ├── interview/
-│   ├── personalize/
-│   ├── render_html/
-│   ├── search_evolve/
-│   └── yuan-skill/
-└── .agent/               # 运行时 IPC、上传、历史、临时笔记
-```
+### 3. 右侧：Agent 工作区
 
-## 核心工作流规则
+可以直接与 Agent 对话，也可以切换不同模式：
 
-完整规则以 `INDEX.md` 为准。最重要的约定是：
+- 检索
+- 八股
+- 面试
+- 元 skill
 
-1. `knowledge/01_*` 到 `knowledge/07_*` 是冷启动精选章节，默认只读。
-2. 普通新增知识应追加到新的递增编号章节目录中，并注册到 `knowledge/INDEX_KB.md`。
-3. HTML 是展示格式。修改 Markdown 后，需要用 `skills/render_html/render.py` 重新生成 HTML。
-4. 新知识先进入 draft 审稿流程，确认后再提升为正式内容。
-5. 联网检索得到的原始资料应保存在 `<note_stem>.sources/` 目录中，不要登记为知识笔记。
+每个模式对应一个或多个 skills 组合，用来完成不同的学习和复盘任务。
 
-## Skills
+---
 
-- `search_evolve`：检索并生成新的知识章节。
-- `personalize`：使用 PDF 简历作为上下文生成个性化知识内容。
-- `render_html`：把 Markdown/JSON 产物转换成单文件 HTML。
-- `baguwen`：围绕章节进行八股口测。
-- `interview`：结合简历/JD 进行模拟面试。
-- `yuan-skill`：通过结构化澄清创建或修改 workspace skills。
+## 任务进度与设置
 
-## 数据与隐私
+右侧还单独做了任务进度页和设置页。
 
-这个工作区是本地优先的，但 Agent 工作流是否调用外部工具或模型服务，取决于你选择的 CLI。
+![任务进度页与设置页](Figure/Fig3.png)
 
-运行时文件会放在 `.agent/` 下，包括上传的 PDF、inbox/outbox 消息、面试临时笔记和保存的聊天历史。`.gitignore` 默认排除了这些临时目录；如果你的 `knowledge/` 里有私人笔记，公开仓库前仍然需要认真检查。
+对于一些执行时间较长的任务，可以在任务进度页观察当前执行状态。
 
-## 常用命令
+设置页支持在不同 Agent 后端之间切换。
 
-把 Markdown 笔记渲染为 HTML：
+## 主要功能
 
-```bash
-python3 skills/render_html/render.py knowledge/01_general/attention_tutorial.md --out knowledge/01_general/attention_tutorial.html
-```
+## 1. 检索：把新资料补进自己的知识库
 
-使用 Claude Code 启动：
+![检索与个性化知识生成](Figure/Fig4.png)
 
-```bash
-python3 -u server.py --port 8741 --bind 127.0.0.1 --agent claude
-```
+工作台内置了多种检索模板，可以辅助你进行联网检索、资料整理和知识生成。
 
-使用 Codex 启动：
+除了普通检索，也可以上传 PDF 简历，生成贴合你个人背景的知识章节。
 
-```bash
-python3 -u server.py --port 8741 --bind 127.0.0.1 --agent codex
-```
+---
 
-## 当前状态
+## 2. 八股：基于知识章节进行多轮追问
 
-这是一个个人工作区项目，目标是实用、可改、容易扩展，而不是一个已经产品化的托管服务。
+![八股模式](Figure/Fig5.png)
+
+点击“八股”，Agent 就会根据当前页面内容制定考察顺序，逐轮提问。
+
+提问暴露出来的问题可以整理成新的知识条目，方便下次回顾。
+
+## 3. 面试：基于简历和岗位需求模拟面试
+
+![模拟面试与评分规则](Figure/Fig6.png)
+
+上传简历，贴上目标岗位 JD，就可以开始模拟面试。
+
+支持切换不同类型的面试官，有不同的考察重点，并且会根据岗位类型调整评分规则。
+
+## 4. 元 skill：修改已有 skill 或创建新 skill
+
+![元 skill 模式](Figure/Fig7.png)
+
+元 skill 用来修改已有 skill，或者创建一个新的 skill。
+
+会通过几轮提问（功能继承自“十万个为什么“maxkura/Ask_Why），把你的需求理清楚，让工作台生长出更适合你自己的使用方式。
