@@ -2,132 +2,106 @@
 
 [中文版本](README.zh-CN.md)
 
-Yuan Knowledge Base is a local-first AI knowledge workspace for building, browsing, evolving, and practicing with a personal technical knowledge base. It combines a lightweight web console, a file-based agent IPC layer, Markdown/HTML knowledge notes, and extensible workspace skills.
+A personalized knowledge workspace for researching materials, reviewing interview fundamentals, and practicing mock interviews.
 
-The project is designed for agent-assisted learning workflows: research a topic, preserve source material, generate reviewable notes, practice with interview-style modes, and create or modify custom skills inside the same workspace.
+## Overview
 
-## Highlights
+**Yuan Knowledge Base** is designed to help you build a truly personal knowledge base. It systematically brings together information scattered across different sources and gradually turns it into your own knowledge and skills through learning, questioning, review, and mock interviews.
 
-- **Local web console**: browse the knowledge base, chat with an agent, upload PDFs, inspect progress, and switch runtime settings from `paper-ui/`.
-- **Agent-powered knowledge evolution**: use Codex or Claude Code to research topics, create draft chapters, update indexes, and render notes.
-- **Built-in learning modes**:
-  - `Search`: generate knowledge notes from research tasks.
-  - `Baguwen`: quiz yourself on the currently opened knowledge chapter.
-  - `Interview`: run resume/JD-aware mock interviews.
-  - `Yuan Skill`: create or modify workspace skills through a structured clarification workflow.
-  - default `Agent`: free-form workspace help without entering the full knowledge-generation pipeline.
-- **Reviewable knowledge workflow**: new knowledge is created as draft content first, then promoted after review.
-- **Raw source retention**: web-derived notes can keep local source excerpts in sibling `.sources/` folders for later verification.
-- **Resumable chat history**: conversation history is stored as JSON under `.agent/history/`.
-- **Extensible skills**: each subdirectory under `skills/` defines a reusable workflow or utility.
+---
 
-## Quick Start
+## Cold-Start Knowledge Base
 
-### macOS
+The initial content is inherited from ARIS-in-AI-Offer:
 
-```bash
-./start.command
-```
+![Cold-start knowledge base](Figure/Fig1.png)
 
-### Windows
+The project organizes common AI interview and learning topics by subject, including principles, formula derivations, and code.
 
-```bat
-start.bat
-```
+The main areas are:
 
-### Manual
+- General AI foundations
+- Post-training and alignment
+- Model architectures
+- Generative theory
+- Generation systems
+- Multimodal AI
+- Agents
 
-```bash
-python3 -u server.py --port 8741 --bind 127.0.0.1 --agent codex
-```
+---
 
-Then open:
+## Page Layout
 
-```text
-http://127.0.0.1:8741/paper-ui/index.html
-```
+The Yuan Knowledge Base frontend uses a three-column layout:
 
-The default startup scripts use the legacy compatibility environment variables `EVOLVEKB_PORT` and `EVOLVEKB_AGENT`:
+![Three-column Yuan Knowledge Base layout](Figure/Fig2.png)
 
-```bash
-EVOLVEKB_PORT=8741 EVOLVEKB_AGENT=codex ./start.command
-```
+### 1. Left: Knowledge Directory
 
-## Requirements
+Existing articles and new content generated through research are collected here for easy management and discovery.
 
-- Python 3.10+
-- A modern browser
-- Optional, for agent workflows:
-  - Codex CLI, or
-  - Claude Code CLI
+### 2. Center: Reading Area
 
-You can browse existing knowledge with the local server alone. Agent-backed generation, interview feedback, and skill editing require the selected CLI to be installed and authenticated.
+Knowledge chapters are stored in both `html` and `md` formats:
 
-## Project Layout
+- `html` is for human reading.
+- `md` is for agents to understand and process.
 
-```text
-yuan-knowledge-base-workspace/
-├── INDEX.md              # Workspace rules for humans and agents
-├── server.py             # Local server, API routes, agent IPC, prompt routing
-├── paper-ui/             # Browser console
-├── knowledge/            # Markdown/HTML knowledge base
-│   ├── INDEX_KB.md       # Knowledge route map and pending review index
-│   └── 01_* ... 07_*     # Curated cold-start chapters
-├── skills/               # Agent-readable skills and utilities
-│   ├── baguwen/
-│   ├── interview/
-│   ├── personalize/
-│   ├── render_html/
-│   ├── search_evolve/
-│   └── yuan-skill/
-└── .agent/               # Runtime IPC, uploads, histories, notes
-```
+### 3. Right: Agent Workspace
 
-## Core Workflow Rules
+You can chat directly with the agent or switch between different modes:
 
-The canonical workspace rules live in `INDEX.md`. The most important conventions are:
+- Search
+- Baguwen
+- Interview
+- Yuan Skill
 
-1. `knowledge/01_*` through `knowledge/07_*` are curated cold-start chapters and should be treated as read-only by default.
-2. Ordinary new knowledge should be appended in a new incrementally numbered chapter directory, then registered in `knowledge/INDEX_KB.md`.
-3. HTML is the display format. After editing Markdown, regenerate HTML with `skills/render_html/render.py`.
-4. New knowledge should go through the draft review pipeline before promotion.
-5. Source material from web research should be retained in `<note_stem>.sources/` folders and should not be registered as notes.
+Each mode combines one or more skills to support different learning and review tasks.
 
-## Skills
+---
 
-- `search_evolve`: research and generate new knowledge chapters.
-- `personalize`: use a PDF resume as context for personalized knowledge generation.
-- `render_html`: convert Markdown/JSON artifacts into single-file HTML.
-- `baguwen`: run chapter-based oral-exam practice.
-- `interview`: run resume/JD-aware mock interviews.
-- `yuan-skill`: create or modify workspace skills with structured clarification.
+## Task Progress and Settings
 
-## Data and Privacy Notes
+The right-hand panel also includes dedicated Progress and Settings pages.
 
-This workspace is local-first, but agent workflows may call external tools or model providers depending on the CLI you select.
+![Task progress and settings pages](Figure/Fig3.png)
 
-Runtime files are stored under `.agent/`, including uploaded PDFs, inbox/outbox messages, temporary interview notes, and saved chat histories. The `.gitignore` excludes these transient directories by default, but review the repository carefully before publishing it if your `knowledge/` folder contains private notes.
+For longer-running tasks, you can follow the current execution status on the Progress page.
 
-## Useful Commands
+The Settings page lets you switch between different agent backends.
 
-Render a Markdown note to HTML:
+## Main Features
 
-```bash
-python3 skills/render_html/render.py knowledge/01_general/attention_tutorial.md --out knowledge/01_general/attention_tutorial.html
-```
+## 1. Search: Add New Material to Your Knowledge Base
 
-Run the server with Claude Code:
+![Search and personalized knowledge generation](Figure/Fig4.png)
 
-```bash
-python3 -u server.py --port 8741 --bind 127.0.0.1 --agent claude
-```
+The workspace includes several research templates for web search, source organization, and knowledge generation.
 
-Run the server with Codex:
+In addition to regular research, you can upload a PDF resume to generate knowledge chapters tailored to your background.
 
-```bash
-python3 -u server.py --port 8741 --bind 127.0.0.1 --agent codex
-```
+---
 
-## Status
+## 2. Baguwen: Multi-Round Questions Based on a Knowledge Chapter
 
-This is a personal workspace project. It is built to be practical, hackable, and easy to extend rather than packaged as a polished hosted service.
+![Baguwen mode](Figure/Fig5.png)
+
+Select **Baguwen**, and the agent will create an assessment sequence from the content on the current page and ask questions one round at a time.
+
+Any gaps exposed during questioning can be organized into new knowledge entries for future review.
+
+## 3. Interview: Mock Interviews Based on Your Resume and Job Requirements
+
+![Mock interviews and scoring rules](Figure/Fig6.png)
+
+Upload your resume, paste the target job description, and start a mock interview.
+
+You can choose from several interviewer types, each with a different focus. The scoring rules also adapt to the role type.
+
+## 4. Yuan Skill: Modify an Existing Skill or Create a New One
+
+![Yuan Skill mode](Figure/Fig7.png)
+
+Yuan Skill can modify an existing skill or create a new one.
+
+Through several rounds of questions—inheriting its clarification workflow from maxkura/Ask_Why—it helps clarify your needs so the workspace can evolve around the way you work.
